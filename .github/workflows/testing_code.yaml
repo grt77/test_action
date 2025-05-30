@@ -3,7 +3,7 @@ name: Run Pytest
 on:
   push:
     branches:
-      - '*'    # or specify e.g. 'main' or ['main', 'dev']
+      - '*'
 
 jobs:
   test:
@@ -17,7 +17,10 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install pipenv dependencies
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
         run: pipenv install --dev
 
       - name: Run pytest
