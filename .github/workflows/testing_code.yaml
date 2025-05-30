@@ -17,12 +17,29 @@ jobs:
       - name: Install dependencies
         run: pip install pipenv && pipenv install --dev
 
-      - name: Build coverage file
+      - name: Run Pytest and Capture Report
+        id: pytest_report # Give this step an ID to reference its output
         run: |
-            pipenv run pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=app tests/ | tee pytest-coverage.txt
+          # Run pytest and redirect output to a file
+          # We use 'tee' to also print to console for live feedback
+          pipenv run pytest | tee pytest_output.txt
+          # Save the content of the file as a step output
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          cat pytest_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        continue-on-error: true # Allow the workflow to continue even if tests fail
 
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
+      - name: Add Pytest Report to PR Comment
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request' # Ensure this only runs on pull requests
         with:
-            pytest-coverage-path: ./pytest-coverage.txt
-            junitxml-path: ./pytest.xml
+          script: |
+            const report = process.env.PYTEST_REPORT;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Pytest Report\n\n\`\`\`\n${report}\n\`\`\``
+            })
+        env:
+          PYTEST_REPORT: ${{ steps.pytest_report.outputs.report }}
