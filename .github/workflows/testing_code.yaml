@@ -1,23 +1,24 @@
 name: Run Pytest
 
 on:
-  Push:
+  push:
     branches:
-      -'**'
+      - '*'    # or specify e.g. 'main' or ['main', 'dev']
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v3
-      - name: setup python
+
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: install pipenv lib
+
+      - name: Install pipenv dependencies
         run: pipenv install --dev
-      - name: run pyetst
+
+      - name: Run pytest
         run: pipenv run pytest
-
-
