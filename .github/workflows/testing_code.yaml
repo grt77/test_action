@@ -25,4 +25,4 @@ jobs:
         with:
           name: pytest
           path: report.xml
-          reporter: github-pr-check
+          reporter: jest-junit
