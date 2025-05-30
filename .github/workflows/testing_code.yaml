@@ -1,27 +1,26 @@
-name: Run Pytest
+name: Run Tests and Comment
 
 on:
   pull_request:
-    branches:
-      - '*'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # Grant write permission for pull requests to post comments
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install pipenv
-        run: pip install pytest
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv install --dev
 
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
-        with:
-          pytest-coverage-path: ./pytest-coverage.txt
-          junitxml-path: ./pytest.xml
+      - name: Run pytest
+        run: |
+          pipenv run pytest --junitxml=test-report.xml
