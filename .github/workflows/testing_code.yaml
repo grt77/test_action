@@ -6,6 +6,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions: # Add this section
+      issues: write # Grant write permission for issues (which includes comments)
     steps:
       - uses: actions/checkout@v3
 
@@ -18,20 +20,17 @@ jobs:
         run: pip install pipenv && pipenv install --dev
 
       - name: Run Pytest and Capture Report
-        id: pytest_report # Give this step an ID to reference its output
+        id: pytest_report
         run: |
-          # Run pytest and redirect output to a file
-          # We use 'tee' to also print to console for live feedback
           pipenv run pytest | tee pytest_output.txt
-          # Save the content of the file as a step output
           echo "report<<EOF" >> $GITHUB_OUTPUT
           cat pytest_output.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-        continue-on-error: true # Allow the workflow to continue even if tests fail
+        continue-on-error: true
 
       - name: Add Pytest Report to PR Comment
         uses: actions/github-script@v6
-        if: github.event_name == 'pull_request' # Ensure this only runs on pull requests
+        if: github.event_name == 'pull_request'
         with:
           script: |
             const report = process.env.PYTEST_REPORT;
